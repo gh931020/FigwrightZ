@@ -1,6 +1,10 @@
 import type { MutateResult } from '@figwright/shared';
 
 import type { SandboxToolHandler } from '../dispatcher.js';
+import {
+  INSTANCE_COMPONENT_SET_REPAIR_HINT,
+  withComponentSetDiagnostics,
+} from './component-property.js';
 
 /**
  * Set an instance's component properties. Keys are the names from get_component_api (VARIANT by
@@ -28,8 +32,10 @@ export const createSetInstancePropertiesHandler =
       throw new Error(`set_instance_properties: node ${p.instanceId} is not an INSTANCE`);
     }
 
-    node.setProperties(
-      p.properties as { [propertyName: string]: string | boolean | VariableAlias },
+    withComponentSetDiagnostics(
+      () => node.setProperties(p.properties as Record<string, string | boolean | VariableAlias>),
+      `set_instance_properties: cannot set component properties for instance ${node.id}`,
+      INSTANCE_COMPONENT_SET_REPAIR_HINT,
     );
 
     const result: MutateResult = { ok: true, nodeId: node.id };

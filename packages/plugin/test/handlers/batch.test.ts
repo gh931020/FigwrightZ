@@ -2334,6 +2334,34 @@ describe('batch inverses for instances and text styles', () => {
     expect(current().main).toBe(mains.A);
   });
 
+  it('identifies a broken set during capture and leaves the whole batch unapplied', async () => {
+    const { instance, figmaCtx } = makeInstance();
+    Object.defineProperty(instance, 'componentProperties', {
+      get() {
+        throw new Error('in get_componentProperties: Component set for node has existing errors');
+      },
+    });
+    const setFills = vi.fn<() => Promise<unknown>>();
+    const handler = createBatchHandler(figmaCtx, {
+      set_instance_properties: createSetInstancePropertiesHandler(figmaCtx),
+      set_fills: setFills,
+    });
+
+    await expect(
+      handler({
+        ops: [
+          { tool: 'set_fills', params: { nodeId: 'F', fills: [] } },
+          {
+            tool: 'set_instance_properties',
+            params: { instanceId: 'I:1', properties: { State: 'B' } },
+          },
+        ],
+      }),
+    ).rejects.toThrow(/no changes applied; .*instance I:1.*Go to main component/);
+    expect(setFills).not.toHaveBeenCalled();
+    expect(instance.setProperties).not.toHaveBeenCalled();
+  });
+
   it('swaps an instance back to the main it had', async () => {
     const { figmaCtx, mains, current } = makeInstance();
     const handler = createBatchHandler(figmaCtx, {

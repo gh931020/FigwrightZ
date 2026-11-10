@@ -84,6 +84,29 @@ describe('get_component_api handler', () => {
     expect(result.id).toBe('CS:1');
   });
 
+  it('identifies the requested instance and the set that withholds property definitions', async () => {
+    const cause = new Error(
+      'in get_componentPropertyDefinitions: Component set has existing errors',
+    );
+    const brokenSet = {
+      ...set,
+      get componentPropertyDefinitions(): never {
+        throw cause;
+      },
+    };
+    const brokenInstance = {
+      ...instance,
+      getMainComponentAsync: async () => ({ ...variant, parent: brokenSet }),
+    };
+
+    await expect(
+      createGetComponentApiHandler(fakeFigma({ 'I:1': brokenInstance }))({ nodeId: 'I:1' }),
+    ).rejects.toMatchObject({
+      message: expect.stringMatching(/node I:1 \(owner CS:1\).*duplicate variant combinations/),
+      cause,
+    });
+  });
+
   it('throws for a non-component node and a missing node', async () => {
     const frame = { id: 'F:1', name: 'Frame', type: 'FRAME' };
     await expect(

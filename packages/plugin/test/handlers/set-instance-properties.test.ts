@@ -34,6 +34,28 @@ describe('set_instance_properties handler', () => {
     ).rejects.toThrow(/not an INSTANCE/);
   });
 
+  it('adds a repair hint only when Figma reports a broken component set', async () => {
+    const cause = new Error('in setProperties: Component set for node has existing errors');
+    const invalidValue = new Error('in setProperties: unknown property');
+    const setProperties = vi
+      .fn<(properties: unknown) => void>()
+      .mockImplementationOnce(() => {
+        throw cause;
+      })
+      .mockImplementationOnce(() => {
+        throw invalidValue;
+      });
+    const instance = { id: 'I:1', type: 'INSTANCE', setProperties };
+    const handler = createSetInstancePropertiesHandler(fakeFigma({ 'I:1': instance }));
+    const params = { instanceId: 'I:1', properties: { Size: 'L' } };
+
+    await expect(handler(params)).rejects.toMatchObject({
+      message: expect.stringMatching(/instance I:1.*Go to main component/),
+      cause,
+    });
+    await expect(handler(params)).rejects.toBe(invalidValue);
+  });
+
   it('throws when properties is empty or not an object', async () => {
     const instance = { id: 'I:1', type: 'INSTANCE', setProperties: vi.fn<(p: unknown) => void>() };
     await expect(

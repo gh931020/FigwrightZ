@@ -33,7 +33,12 @@ import {
   writeIfDifferent,
 } from './batch-snapshot.js';
 import { resolveSharedParent } from './boolean-nodes.js';
-import { propertyDisplayName, resolveComponentOwner } from './component-property.js';
+import {
+  INSTANCE_COMPONENT_SET_REPAIR_HINT,
+  propertyDisplayName,
+  resolveComponentOwner,
+  withComponentSetDiagnostics,
+} from './component-property.js';
 import { findReplacePlan } from './find-replace-text.js';
 import {
   assertFigmaEditor,
@@ -1248,7 +1253,11 @@ const instancePropsInverse: BatchInverse = {
     const properties = paramsOf(params).properties;
     const keys =
       typeof properties === 'object' && properties !== null ? Object.keys(properties) : [];
-    const current = instance.componentProperties;
+    const current = withComponentSetDiagnostics(
+      () => instance.componentProperties,
+      `batch/set_instance_properties: no changes applied; cannot capture component properties for instance ${instance.id}`,
+      INSTANCE_COMPONENT_SET_REPAIR_HINT,
+    );
     const previous: Record<string, PropertyValue> = {};
     for (const key of keys) {
       const prop = current[key];
@@ -1267,13 +1276,19 @@ const instancePropsInverse: BatchInverse = {
     const s = captured as InstanceState;
     const node = await live(figmaCtx, s.id);
     if (node?.type !== 'INSTANCE') return undefined;
-    const now = node.componentProperties;
-    const changed = Object.fromEntries(
-      Object.entries(s.properties).filter(
-        ([key, value]) => !same(now[key]?.boundVariables?.value ?? now[key]?.value, value),
-      ),
+    withComponentSetDiagnostics(
+      () => {
+        const now = node.componentProperties;
+        const changed = Object.fromEntries(
+          Object.entries(s.properties).filter(
+            ([key, value]) => !same(now[key]?.boundVariables?.value ?? now[key]?.value, value),
+          ),
+        );
+        if (Object.keys(changed).length > 0) node.setProperties(changed);
+      },
+      `batch/set_instance_properties: cannot restore component properties for instance ${node.id}`,
+      INSTANCE_COMPONENT_SET_REPAIR_HINT,
     );
-    if (Object.keys(changed).length > 0) node.setProperties(changed);
     await swapBack(figmaCtx, node, s.mainId);
     return undefined;
   },

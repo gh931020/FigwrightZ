@@ -1,6 +1,7 @@
 import type { ComponentPropertyApiEntry, GetComponentApiResult } from '@figwright/shared';
 
 import type { SandboxToolHandler } from '../dispatcher.js';
+import { withComponentSetDiagnostics } from './component-property.js';
 
 /**
  * Resolve a node to the one that owns the full property contract: a COMPONENT_SET as-is, a
@@ -45,8 +46,13 @@ export const createGetComponentApiHandler =
       );
     }
 
+    const definitions = withComponentSetDiagnostics(
+      () => target.componentPropertyDefinitions,
+      `get_component_api: cannot read component properties for node ${node.id} (owner ${target.id})`,
+      'Open the component set in its Figma source file and fix the variant errors.',
+    );
     const properties: Record<string, ComponentPropertyApiEntry> = {};
-    for (const [name, def] of Object.entries(target.componentPropertyDefinitions)) {
+    for (const [name, def] of Object.entries(definitions)) {
       const entry: ComponentPropertyApiEntry = { type: def.type, defaultValue: def.defaultValue };
       if (def.variantOptions !== undefined) entry.variantOptions = [...def.variantOptions];
       if (def.preferredValues !== undefined) {

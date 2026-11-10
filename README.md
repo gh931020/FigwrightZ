@@ -14,6 +14,8 @@
 
 [About](#about) · [Setup](#setup) · [Skills](#skills) · [Tools](#tools) · [Plugin](#plugin) · [FAQ](#faq) · [Contributing](#contributing)
 
+This fork is maintained at [gh931020/FigwrightZ](https://github.com/gh931020/FigwrightZ). To try fixes from this repository, use the [local source setup](#run-this-fork-from-source). The npm and release links below point to the upstream Figwright project.
+
 [![npm](https://img.shields.io/npm/v/@figwright/mcp?logo=npm&color=cb3837)](https://www.npmjs.com/package/@figwright/mcp)
 [![CI](https://github.com/awdr74100/figwright/actions/workflows/ci.yml/badge.svg)](https://github.com/awdr74100/figwright/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
@@ -320,6 +322,15 @@ It stays quiet on a difference that cannot bite — a plugin a version behind a 
 </details>
 
 <details>
+<summary><strong>What does “Component set for node has existing errors” mean?</strong></summary>
+
+Figma can withhold component properties when a component set contains duplicate variant combinations or variants with inconsistent property names. Ordinary reads such as `get_node` and `get_design_context` keep the rest of the node data and report `componentSetError` where they omit the unavailable properties. A property-specific read or write can still fail. If a batch cannot capture the previous property values, it stops before applying any changes.
+
+In Figma Design, select the affected instance and use **Go to main component**. In the component set, check that each variant uses the same property names and that no two variants use the same combination of values. For a library component, correct the set in the source file, publish the library update, and apply it in the consuming file before retrying.
+
+</details>
+
+<details>
 <summary><strong>Do I need a paid Figma plan or Dev Mode?</strong></summary>
 
 No. Figwright talks to Figma through a plugin, so the free tier is enough. No Dev Mode seat or paid tier required.
@@ -367,6 +378,23 @@ The claim belongs to that agent's own server process, so it never affects the ot
 ## Contributing
 
 Contributions are welcome. See **[CONTRIBUTING.md](./CONTRIBUTING.md)** for how to get set up and open a pull request, and **[AGENTS.md](./AGENTS.md)** for the architecture, repo layout, tech stack, and conventions.
+
+### Run this fork from source
+
+Use the Node version in `.node-version` and the pnpm version in `package.json`.
+
+```sh
+git clone https://github.com/gh931020/FigwrightZ.git
+cd FigwrightZ
+pnpm install --frozen-lockfile
+pnpm build
+```
+
+1. Point the Figwright entry in your MCP client at `node` with the **absolute path** to `packages/mcp/dist/index.mjs` as its argument. Restart the client's Figwright connection so it uses the local server.
+2. In Figma Desktop, use **Plugins → Development → Import plugin from manifest…** and select `packages/plugin/manifest.json` from this checkout. Run that development plugin, then call `ping` from your MCP client.
+3. After changing the plugin, rebuild and reopen the development plugin. After changing the server, rebuild and restart its MCP connection.
+
+To track upstream changes separately, run `git remote add upstream https://github.com/awdr74100/figwright.git` once and `git fetch upstream` when you want to review updates. Keep `origin` pointed at this fork.
 
 ## What's in the name
 

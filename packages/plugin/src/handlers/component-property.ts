@@ -62,3 +62,27 @@ export const propertyDisplayName = (propertyId: string): string => {
   const hash = propertyId.lastIndexOf('#');
   return hash === -1 ? propertyId : propertyId.slice(0, hash);
 };
+
+/** Keep Figma's refusal when the tool needs the properties, but show where to fix it. */
+export const withComponentSetDiagnostics = <T>(
+  operation: () => T,
+  context: string,
+  repairHint: string,
+): T => {
+  try {
+    return operation();
+  } catch (error) {
+    const message = (error instanceof Error ? error.message : String(error)).replace(
+      /^in \w+: /,
+      '',
+    );
+    if (!/^Component set(?: for node)? has existing errors\.?$/.test(message)) throw error;
+    throw new Error(
+      `${context}: ${message.replace(/\.$/, '')}. ${repairHint} Check for duplicate variant combinations or inconsistent variant properties, then retry.`,
+      { cause: error },
+    );
+  }
+};
+
+export const INSTANCE_COMPONENT_SET_REPAIR_HINT =
+  'In Figma, use Go to main component on this instance and fix its component set in the source file.';
