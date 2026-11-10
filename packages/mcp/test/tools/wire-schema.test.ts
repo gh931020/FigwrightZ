@@ -11,6 +11,7 @@ import { handleDesignContext } from '../../src/tools/design-context-guard.js';
 import { handleDesignDiff } from '../../src/tools/design-diff.js';
 import { handleExportPdf } from '../../src/tools/export-pdf.js';
 import { handleExportVideo } from '../../src/tools/export-video.js';
+import { handleComponentHandoff } from '../../src/tools/get-component-handoff.js';
 import { handleIconMap } from '../../src/tools/icon-map.js';
 import { ALL_TOOL_SPECS } from '../../src/tools/registry.js';
 import { handleSaveImageFills } from '../../src/tools/save-image-fills.js';
@@ -123,6 +124,39 @@ describe('server-built plugin payloads satisfy the schema the leader validates',
       label: 'component_map',
       run: d => handleComponentMap(d, { rootDir: root, nodeId: '1:1' }),
       expected: ['get_design_context'],
+    },
+    {
+      tool: 'get_component_handoff',
+      label: 'get_component_handoff (reads the source set and renders the variants)',
+      run: d =>
+        handleComponentHandoff(async (name, args) => {
+          await d(name, args).catch(error => {
+            if (!(error instanceof Error) || error.message !== ABORT) throw error;
+          });
+          const set = { id: '1:1', name: 'Button', type: 'COMPONENT_SET' };
+          const variant = { id: '1:2', name: 'State=Default', type: 'COMPONENT' };
+          if (name === 'get_selection') return { nodes: [set] };
+          if (name === 'get_design_context') {
+            return { nodes: [(args as { nodeId: string }).nodeId === set.id ? set : variant] };
+          }
+          if (name === 'get_component_api') return set;
+          if (name === 'get_local_components') {
+            return {
+              components: [{ ...variant, variantProperties: { State: 'Default' } }],
+              componentSets: [{ ...set, componentIds: [variant.id] }],
+            };
+          }
+          if (name === 'get_screenshot') return { images: [] };
+          throw new Error(`Unexpected dispatch: ${name}`);
+        }, {}),
+      expected: [
+        'get_selection',
+        'get_design_context',
+        'get_component_api',
+        'get_local_components',
+        'get_design_context',
+        'get_screenshot',
+      ],
     },
     {
       tool: 'design_diff',

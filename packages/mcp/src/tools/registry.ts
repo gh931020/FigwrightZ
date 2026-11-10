@@ -56,6 +56,7 @@ import { flattenNodesTool } from './flatten-nodes.js';
 import { flipNodesTool } from './flip-nodes.js';
 import { getAnnotationsTool } from './get-annotations.js';
 import { getComponentApiTool } from './get-component-api.js';
+import { getComponentHandoffTool } from './get-component-handoff.js';
 import { getDesignContextTool } from './get-design-context.js';
 import { getDocumentTool } from './get-document.js';
 import { getFontsTool } from './get-fonts.js';
@@ -187,6 +188,7 @@ const DECLARED_TOOL_SPECS: readonly ToolSpec[] = [
   analyzeProjectTool,
   scanComponentsTool,
   componentMapTool,
+  getComponentHandoffTool,
   tokenMapTool,
   iconMapTool,
   designDiffTool,

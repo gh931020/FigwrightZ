@@ -29,6 +29,7 @@ const SERVER_ONLY_TOOLS = new Set([
   'token_map',
   'icon_map',
   'design_diff',
+  'get_component_handoff',
 ]);
 
 const serverNames = ALL_TOOL_SPECS.map(s => s.name);
