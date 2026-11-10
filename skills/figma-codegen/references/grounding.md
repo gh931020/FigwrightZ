@@ -12,7 +12,8 @@ per-property fidelity catalog, and how to ground a page too big for one call.
   withholds `componentProperties` while the instance's component set has errors (two variants with
   the same values, or variants whose properties differ). Build it from its `mainComponent` and
   the screenshot, and tell the user that set needs fixing in Figma — never emit it as a prop-less
-  default.
+  default. Run `audit_component_sets` on the selection or current page to locate the source set,
+  group affected instances, and get repair suggestions without modifying the file.
 
 - **`colorProfile: "DISPLAY_P3"` means every colour in the payload is a P3 colour.** It is the first
   key of a result from a Display P3 file, and absent otherwise. There, a hex (and any r/g/b) is P3

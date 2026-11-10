@@ -406,6 +406,51 @@ describe.skipIf(!existsSync(DIST_ENTRY))('MCP wire contract (built dist)', () =>
     }
   }, 30_000);
 
+  it('routes an explicitly scoped component audit through the built server as a read', async () => {
+    const server = new WireClient();
+    await server.start();
+    await server.handshake(LATEST_CLIENT_PROTOCOL);
+    const report = {
+      scope: 'current_page',
+      pageId: '1:1',
+      skipsInvisibleInstanceChildren: false,
+      componentSets: [
+        {
+          nodeId: '2:3',
+          name: 'Button',
+          remote: false,
+          error: 'Component set has existing errors',
+          affectedInstances: [{ nodeId: '2:4', name: 'Confirm button' }],
+          variantFindings: [],
+          repairHints: ['Give every variant a unique combination of property values.'],
+        },
+      ],
+      unresolvedInstances: [],
+      unreadableNodes: [],
+    };
+    const plugin = await connectFakePlugin({
+      port: server.port,
+      handlers: {
+        audit_component_sets: params => {
+          expect(params).toEqual({ scope: 'current_page' });
+          return report;
+        },
+      },
+    });
+
+    try {
+      const res = await server.send('tools/call', {
+        name: 'audit_component_sets',
+        arguments: { scope: 'current_page' },
+      });
+      const content = res.result?.content as { type: string; text: string }[];
+      expect(JSON.parse(content[0]!.text)).toEqual(report);
+    } finally {
+      closeSocket(plugin);
+      await server.stop();
+    }
+  }, 30_000);
+
   it('carries raw Motion through the built server untouched, fields it has never seen included', async () => {
     // The inventory's contract is that nothing between the Figma API and the agent reshapes Motion
     // data. Every hop — msgpack, the relay, the SDK's result handling — is real here, so a

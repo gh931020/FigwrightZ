@@ -63,6 +63,9 @@ export const propertyDisplayName = (propertyId: string): string => {
   return hash === -1 ? propertyId : propertyId.slice(0, hash);
 };
 
+export const isComponentSetError = (message: string): boolean =>
+  /^Component set(?: for node)? has existing errors\.?$/.test(message);
+
 /** Keep Figma's refusal when the tool needs the properties, but show where to fix it. */
 export const withComponentSetDiagnostics = <T>(
   operation: () => T,
@@ -76,7 +79,7 @@ export const withComponentSetDiagnostics = <T>(
       /^in \w+: /,
       '',
     );
-    if (!/^Component set(?: for node)? has existing errors\.?$/.test(message)) throw error;
+    if (!isComponentSetError(message)) throw error;
     throw new Error(
       `${context}: ${message.replace(/\.$/, '')}. ${repairHint} Check for duplicate variant combinations or inconsistent variant properties, then retry.`,
       { cause: error },

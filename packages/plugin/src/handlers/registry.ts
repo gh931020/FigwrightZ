@@ -9,6 +9,7 @@ import { createAlignNodesHandler } from './align-nodes.js';
 import { createApplyAnimationStyleHandler } from './apply-animation-style.js';
 import { createApplyManualKeyframeTrackHandler } from './apply-manual-keyframe-track.js';
 import { createApplyStyleToNodeHandler } from './apply-style-to-node.js';
+import { createAuditComponentSetsHandler } from './audit-component-sets.js';
 import { createBatchRenameNodesHandler } from './batch-rename-nodes.js';
 import { createBatchHandler } from './batch.js';
 import { createBindComponentPropertyHandler } from './bind-component-property.js';
@@ -265,6 +266,7 @@ export const createSandboxHandlers = (figmaApi: typeof figma): SandboxHandlers =
     get_styles: createGetStylesHandler(figmaCtx),
     get_variable_defs: createGetVariableDefsHandler(figmaCtx),
     get_local_components: createGetLocalComponentsHandler(figmaCtx),
+    audit_component_sets: createAuditComponentSetsHandler(figmaCtx),
     get_component_api: createGetComponentApiHandler(figmaCtx),
     get_viewport: createGetViewportHandler(figmaCtx),
     get_fonts: createGetFontsHandler(figmaCtx),

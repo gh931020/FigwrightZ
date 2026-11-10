@@ -13,7 +13,8 @@ export const getLocalComponentsTool: ToolSpec = {
     'Components carry their variantProperties (when part of a set); component sets ' +
     'carry their variantGroupProperties (available values per axis) and the ids of their variant components. ' +
     'A set Figma flags with errors (two variants with the same values, or variants whose properties ' +
-    'differ) carries componentSetError in place of those properties, and so do its variants.',
+    'differ) carries componentSetError in place of those properties, and so do its variants. ' +
+    'Use audit_component_sets for affected instances and repair hints.',
   inputSchema: z.object({
     nodeId: z
       .string()

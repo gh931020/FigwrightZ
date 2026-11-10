@@ -46,6 +46,7 @@ const HEAVY_TOOLS: ReadonlySet<string> = new Set([
   // Component catalogues also scan a whole subtree. A cold library page in a background file
   // exceeded the default sandbox window before its native component scan could return.
   'get_local_components',
+  'audit_component_sets',
   // A library import resolves the library inside Figma, and in a background file that work can wait
   // on Figma's own throttled timers: a background tab was measured delaying a zero-delay timer by
   // close to a minute, and first-time resolution there was seen to outlast the default window. This

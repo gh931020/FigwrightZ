@@ -40,6 +40,35 @@ export const GetLocalComponentsResultSchema = z.object({
 });
 export type GetLocalComponentsResult = z.infer<typeof GetLocalComponentsResultSchema>;
 
+const AuditNodeSchema = z.object({ nodeId: z.string(), name: z.string() });
+const AuditReadFailureSchema = AuditNodeSchema.extend({ error: z.string() });
+
+export const AuditComponentSetsResultSchema = z.object({
+  scope: z.enum(['selection', 'current_page']),
+  pageId: z.string(),
+  skipsInvisibleInstanceChildren: z.boolean(),
+  componentSets: z.array(
+    AuditNodeSchema.extend({
+      remote: z.boolean(),
+      error: z.string(),
+      affectedInstances: z.array(AuditNodeSchema),
+      variantFindings: z.array(
+        z.object({
+          kind: z.enum(['duplicate_variant_values', 'inconsistent_variant_properties']),
+          source: z.enum(['variant_properties', 'variant_names']),
+          variants: z.array(AuditNodeSchema),
+        }),
+      ),
+      repairHints: z.array(z.string()),
+    }),
+  ),
+  unresolvedInstances: z.array(
+    AuditReadFailureSchema.extend({ reason: z.string(), repairHint: z.string() }),
+  ),
+  unreadableNodes: z.array(AuditReadFailureSchema),
+});
+export type AuditComponentSetsResult = z.infer<typeof AuditComponentSetsResultSchema>;
+
 /**
  * One entry of a component's property contract (Figma's `componentPropertyDefinitions`). The key in
  * the containing record is the property name exactly as `setProperties` expects it: a bare name for

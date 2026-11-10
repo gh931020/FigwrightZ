@@ -15,6 +15,7 @@
     "get_styles": [],
     "get_variable_defs": [],
     "get_local_components": ["nodeId"],
+    "audit_component_sets": ["scope"],
     "get_component_api": ["nodeId"],
     "get_viewport": [],
     "get_fonts": [],

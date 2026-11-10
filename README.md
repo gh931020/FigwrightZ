@@ -47,7 +47,7 @@ Everything runs on your machine: the server, the relay, and the plugin. Your des
 ## Why Figwright
 
 - **Not gated**: the official Dev Mode MCP is behind a paid Dev Mode seat. Figwright runs on the free tier.
-- **Bidirectional**: not read-only. **135 tools** span reading _and_ writing the canvas, so an agent can both implement designs and build them.
+- **Bidirectional**: not read-only. **136 tools** span reading _and_ writing the canvas, so an agent can both implement designs and build them.
 - **Provider-first codegen**: Figwright detects your real stack (framework + styling system) and reuses your existing components, tokens, and icons, instead of emitting generic markup you have to rewrite.
 - **One agent per file**: several agents can work at once, each claiming its own open Figma file. Switching tabs no longer sends one agent's edits into another's design — see [working across files](#faq).
 - **Open & extensible**: the read/write workflows ship as installable [skills](#skills) you can adopt or fork.
@@ -137,7 +137,7 @@ npx skills add https://github.com/awdr74100/figwright/tree/main/skills/figma-cod
 
 ## Tools
 
-Figwright exposes **135 MCP tools** in three groups:
+Figwright exposes **136 MCP tools** in three groups:
 
 - **Read**: selection, document and node inspection, styles, variables, components, fonts, prototype reactions and flows, motion (animation) state, screenshots, original image-fill assets, PDF export, and video export of animated frames (MP4 / GIF / WebM); plus `list_files` / `use_file` for working across more than one open Figma file at once.
 - **Write**: create and edit frames, text, shapes (lines, polygons, stars, boolean operations, flattening), auto-layout, alignment and distribution, effects, images (as a new layer or into an existing layer's fill), styles, variables (including importing a team library's variables and styles, and switching a frame to a mode such as Dark), components (including authoring their boolean/text/instance-swap properties), pages, prototype reactions and flows, Motion animations (keyframes, animation-style presets, timelines), and Figma Draw (vector paths drawn and edited point by point from any SVG path data, outlined strokes, repeat groups, text on a path, brush / dynamic / variable-width strokes, pattern fills); plus a `batch` tool to apply many edits at once.
@@ -325,6 +325,8 @@ It stays quiet on a difference that cannot bite — a plugin a version behind a 
 <summary><strong>What does “Component set for node has existing errors” mean?</strong></summary>
 
 Figma can withhold component properties when a component set contains duplicate variant combinations or variants with inconsistent property names. Ordinary reads such as `get_node` and `get_design_context` keep the rest of the node data and report `componentSetError` where they omit the unavailable properties. A property-specific read or write can still fail. If a batch cannot capture the previous property values, it stops before applying any changes.
+
+Run `audit_component_sets` to find the source sets, their affected instances and repair suggestions without editing the document. It scans the selected layers and their descendants, or the current page when nothing is selected. Pass `scope: "current_page"` to scan the page even with an active selection. Source sets can be outside the scan scope. Instances whose source is inaccessible and other read failures are listed separately. A finding marked `variant_names` comes from the layer names because at least one variant's properties were unavailable.
 
 In Figma Design, select the affected instance and use **Go to main component**. In the component set, check that each variant uses the same property names and that no two variants use the same combination of values. For a library component, correct the set in the source file, publish the library update, and apply it in the consuming file before retrying.
 
